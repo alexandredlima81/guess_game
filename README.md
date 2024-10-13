@@ -80,6 +80,8 @@ O objetivo principal desta atividade é criar um ambiente Docker Compose para o 
 
 1. Estrutura dO Repositório
 
+
+```bash
 .
 ├── README.md
 ├── frontend
@@ -133,6 +135,7 @@ O objetivo principal desta atividade é criar um ambiente Docker Compose para o 
 └── tests
     └── test_app.py
 
+```
 2. Dockerfile do Backend Python (Flask)
 No diretório backend/, o arquivo Dockerfile para configurar o container que executa o backend Flask:
 
