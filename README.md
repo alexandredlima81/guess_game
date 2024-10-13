@@ -298,9 +298,9 @@ Para atualizar um dos componentes (backend, frontend ou banco de dados), basta a
 docker-compose up --build
 ```
 # Melhorias Futuras
-> Otimizar tamanho e segunraça das imagens utilizadno por exemplo Chainguard.
-> Implementar autenticação de usuário.
-> Adicionar limite de tentativas no jogo.
+> Otimizar tamanho e segunraça das imagens utilizadno por exemplo Chainguard.\
+> Implementar autenticação de usuário.\
+> Adicionar limite de tentativas no jogo.\
 > Adicionar suporte para mais bancos de dados.
 
 </p>
