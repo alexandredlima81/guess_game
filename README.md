@@ -3,42 +3,88 @@
 <p align="justify">
 
 ## Desafio: Implementação de Estrutura com Docker Compose
+
 Esta documentação descreve o processo de implementação de uma estrutura utilizando Docker Compose para o jogo de adivinhação baseado em Flask, com PostgreSQL como banco de dados e NGINX como proxy reverso. O objetivo é criar uma arquitetura resiliente e escalável, mantendo os dados persistentes e facilitando atualizações de componentes.
 
 ## Objetivo
+
 O objetivo principal desta atividade é criar um ambiente Docker Compose para o jogo de adivinhação disponível no repositório guess_game, que atenda os seguintes requisitos:
 
-Um container para o backend em Python (Flask).
-Um container para o banco de dados PostgreSQL.
-Um container NGINX atuando como proxy reverso e servindo o frontend React.
+- Um container para o backend em Python (Flask).
+- Um container para o banco de dados PostgreSQL.
+- Um container NGINX atuando como proxy reverso e servindo o frontend React.
 
-# Componentes
-## Containers Backend e Frontend
-Backend (Flask): O container do backend executará a aplicação Flask que gerencia a lógica do jogo de adivinhação.
-Frontend (React): O container do frontend exibirá a interface React para o usuário.
-NGINX: Atuará como proxy reverso para balancear a carga entre múltiplas instâncias do backend e também servirá o frontend.
-Banco de Dados PostgreSQL
-O container PostgreSQL armazenará os dados do jogo, como as senhas e os resultados das tentativas de adivinhação.
-O banco será armazenado em um volume persistente para garantir que os dados não sejam perdidos em reinicializações ou atualizações.
-Requisitos
-Containers
-Backend Python: Deve rodar a aplicação Flask do jogo de adivinhação.
-NGINX: Servirá como proxy reverso, balanceando a carga entre instâncias do backend e servindo o frontend React.
-Banco de Dados PostgreSQL
-O container do PostgreSQL deve armazenar as informações do jogo e ser configurado com um volume separado para garantir a persistência dos dados.
-Resiliência e Manutenção
-Os containers devem ser configurados para reiniciar automaticamente em caso de falha.
-O NGINX deve balancear a carga entre múltiplas instâncias do backend, garantindo escalabilidade e alta disponibilidade.
-O banco de dados PostgreSQL deve ser mantido em um volume persistente.
-A estrutura deve permitir a atualização de componentes (backend, frontend, banco de dados) sem alterações complexas no código.
+# Componentes do Sistema
+
+1. Backend (Flask):
+
+- O container do backend executa a aplicação Flask, que gerencia a lógica do jogo de adivinhação.
+- Cada instância do backend é responsável por processar as requisições do jogo e interagir com o banco de dados.
+
+2. Frontend (React):
+
+- O container do frontend exibe a interface React para o usuário.
+- Serve a interface gráfica que permite ao usuário interagir com o jogo de adivinhação.
+
+3. NGINX:
+
+- Atua como um proxy reverso, balanceando a carga entre múltiplas instâncias do backend Flask.
+- Serve também os arquivos estáticos do frontend React, garantindo que o conteúdo da interface do usuário seja exibido corretamente.
+
+4. Banco de Dados PostgreSQL:
+
+- O container PostgreSQL é responsável por armazenar os dados do jogo, como senhas geradas e os resultados das tentativas de adivinhação.
+- Os dados são armazenados em um volume persistente, garantindo a integridade e persistência mesmo durante reinicializações ou atualizações.
+
+# Requisitos dos Containers
+
+1. Containers Backend (Python):
+
+- Devem rodar a aplicação Flask do jogo de adivinhação, conectando-se ao banco de dados para armazenar e processar dados.
+- Múltiplas instâncias do backend são utilizadas para garantir escalabilidade e distribuição de carga entre as requisições.
+
+2. NGINX:
+
+- Servirá como proxy reverso e será responsável por balancear a carga entre as instâncias do backend.
+- Também serve o frontend React, redirecionando as requisições de interface do usuário para os arquivos estáticos e garantindo que todas as rotas do frontend sejam tratadas corretamente.
+
+3. Banco de Dados PostgreSQL:
+
+- O container do PostgreSQL deve armazenar as informações do jogo, como as tentativas de adivinhação e senhas geradas.
+- A configuração do banco de dados deve incluir um volume persistente para garantir que os dados não sejam perdidos, mesmo com a reinicialização dos containers.
+
+# Resiliência e Manutenção
+
+1. Reinicialização Automática:
+
+- Todos os containers (backend, frontend, banco de dados) devem ser configurados com a política restart: always, garantindo que sejam reiniciados automaticamente em caso de falha.
+
+2. Balanceamento de Carga:
+
+- O NGINX balanceará a carga entre múltiplas instâncias do backend Flask, garantindo alta disponibilidade e escalabilidade da aplicação. O balanceamento de carga assegura que o sistema possa processar um número maior de requisições simultâneas.
+
+3. Persistência de Dados:
+
+- O banco de dados PostgreSQL deve utilizar volumes persistentes. Isso assegura que os dados do jogo não sejam perdidos durante atualizações ou reinicializações, garantindo a integridade dos dados a longo prazo.
+
+4. Facilidade de Atualização:
+
+- A arquitetura proposta permite que os componentes (backend, frontend e banco de dados) possam ser atualizados de forma modular, sem a necessidade de alterações complexas no código ou configuração. Isso facilita a manutenção e evolução contínua do sistema.
+
+# Escalabilidade e Alta Disponibilidade
+
+- Múltiplas instâncias do backend podem ser escaladas horizontalmente conforme a demanda do sistema cresce, enquanto o NGINX garante que as requisições sejam distribuídas de maneira equilibrada.
+- O uso de volumes persistentes para o banco de dados PostgreSQL garante a continuidade dos dados, mesmo durante falhas ou reinicializações dos containers.
 
 # Estrutura de diretório
+
 1. Estrutura dO Repositório
 
 .
 ├── README.md
 ├── frontend
 │   ├── README.md
+│   ├── Dockerfile
 │   ├── default.conf
 │   ├── jest.config.ts
 │   ├── package-lock.json
@@ -70,6 +116,7 @@ A estrutura deve permitir a atualização de componentes (backend, frontend, ban
 ├── guess
 │   ├── __init__.py
 │   ├── discover.py
+│   ├── Dockerfile
 │   └── game_routes.py
 ├── repository
 │   ├── __init__.py
@@ -78,6 +125,7 @@ A estrutura deve permitir a atualização de componentes (backend, frontend, ban
 │   ├── hash.py
 │   ├── postgres.py
 │   └── sqlite.py
+├── docker-compose.yml
 ├── requirements-dev.txt
 ├── requirements.txt
 ├── run.py
