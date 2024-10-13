@@ -276,7 +276,7 @@ networks:
 
 **Sintaxe:**
 ```bash
-git clone https://github.com/fams/guess_game.git
+git clone https://github.com/alexandredlima81/guess_game.git
 cd guess_game
 ```
 2. Configurar e Executar o Docker Compose
