@@ -1,157 +1,274 @@
-Aqui está um exemplo de um arquivo `README.md` para o seu jogo:
+# Documentação da Implementação de Estrutura com Docker Compose
 
----
+<p align="justify">
 
-# Jogo de Adivinhação com Flask
+## Desafio: Implementação de Estrutura com Docker Compose
+Esta documentação descreve o processo de implementação de uma estrutura utilizando Docker Compose para o jogo de adivinhação baseado em Flask, com PostgreSQL como banco de dados e NGINX como proxy reverso. O objetivo é criar uma arquitetura resiliente e escalável, mantendo os dados persistentes e facilitando atualizações de componentes.
 
-Este é um simples jogo de adivinhação desenvolvido utilizando o framework Flask. O jogador deve adivinhar uma senha criada aleatoriamente, e o sistema fornecerá feedback sobre o número de letras corretas e suas respectivas posições.
+## Objetivo
+O objetivo principal desta atividade é criar um ambiente Docker Compose para o jogo de adivinhação disponível no repositório guess_game, que atenda os seguintes requisitos:
 
-## Funcionalidades
+Um container para o backend em Python (Flask).
+Um container para o banco de dados PostgreSQL.
+Um container NGINX atuando como proxy reverso e servindo o frontend React.
 
-- Criação de um novo jogo com uma senha fornecida pelo usuário.
-- Adivinhe a senha e receba feedback se as letras estão corretas e/ou em posições corretas.
-- As senhas são armazenadas  utilizando base64.
-- As adivinhações incorretas retornam uma mensagem com dicas.
-  
-## Requisitos
+# Componentes
+## Containers Backend e Frontend
+Backend (Flask): O container do backend executará a aplicação Flask que gerencia a lógica do jogo de adivinhação.
+Frontend (React): O container do frontend exibirá a interface React para o usuário.
+NGINX: Atuará como proxy reverso para balancear a carga entre múltiplas instâncias do backend e também servirá o frontend.
+Banco de Dados PostgreSQL
+O container PostgreSQL armazenará os dados do jogo, como as senhas e os resultados das tentativas de adivinhação.
+O banco será armazenado em um volume persistente para garantir que os dados não sejam perdidos em reinicializações ou atualizações.
+Requisitos
+Containers
+Backend Python: Deve rodar a aplicação Flask do jogo de adivinhação.
+NGINX: Servirá como proxy reverso, balanceando a carga entre instâncias do backend e servindo o frontend React.
+Banco de Dados PostgreSQL
+O container do PostgreSQL deve armazenar as informações do jogo e ser configurado com um volume separado para garantir a persistência dos dados.
+Resiliência e Manutenção
+Os containers devem ser configurados para reiniciar automaticamente em caso de falha.
+O NGINX deve balancear a carga entre múltiplas instâncias do backend, garantindo escalabilidade e alta disponibilidade.
+O banco de dados PostgreSQL deve ser mantido em um volume persistente.
+A estrutura deve permitir a atualização de componentes (backend, frontend, banco de dados) sem alterações complexas no código.
 
-- Python 3.8+
-- Flask
-- Um banco de dados local (ou um mecanismo de armazenamento configurado em `current_app.db`)
-- node 18.17.0
+# Estrutura de diretório
+1. Estrutura dO Repositório
 
-## Instalação
+.
+├── README.md
+├── frontend
+│   ├── README.md
+│   ├── default.conf
+│   ├── jest.config.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── index.html
+│   │   ├── logo192.png
+│   │   ├── logo512.png
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.test.tsx
+│   │   ├── App.tsx
+│   │   ├── components
+│   │   │   ├── Breaker.test.tsx
+│   │   │   ├── Breaker.tsx
+│   │   │   ├── Home.tsx
+│   │   │   └── Maker.tsx
+│   │   ├── index.css
+│   │   ├── index.js
+│   │   ├── logo.svg
+│   │   ├── mocks
+│   │   │   └── handlers.ts
+│   │   ├── reportWebVitals.js
+│   │   └── setupTests.ts
+│   └── tsconfig.json
+├── guess
+│   ├── __init__.py
+│   ├── discover.py
+│   └── game_routes.py
+├── repository
+│   ├── __init__.py
+│   ├── dynamodb.py
+│   ├── entities.py
+│   ├── hash.py
+│   ├── postgres.py
+│   └── sqlite.py
+├── requirements-dev.txt
+├── requirements.txt
+├── run.py
+├── start-backend.sh
+└── tests
+    └── test_app.py
 
-1. Clone o repositório:
+2. Dockerfile do Backend Python (Flask)
+No diretório backend/, o arquivo Dockerfile para configurar o container que executa o backend Flask:
 
-   ```bash
-   git clone https://github.com/fams/guess_game.git
-   cd guess-game
-   ```
+```Dockerfile
 
-2. Crie um ambiente virtual e ative-o:
+FROM python:3.8-slim
 
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   venv\Scripts\activate  # Windows
-   ```
+WORKDIR /app
 
-3. Instale as dependências:
+COPY . /app
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+RUN pip install -r requirements.txt
 
-4. Configure o banco de dados com as variáveis de ambiente no arquivo start-backend.sh
-    1. Para sqlite
+EXPOSE 5000
 
-        ```bash
-            export FLASK_APP="run.py"
-            export FLASK_DB_TYPE="sqlite"            # Use SQLITE
-            export FLASK_DB_PATH="caminho/db.sqlite" # caminho do banco
-        ```
+CMD ["python", "run.py"]
+```
 
-    2. Para Postgres
+3. Dockerfile do Frontend React
+No diretório frontend/, o arquivo Dockerfile para configurar o container que serve o frontend via NGINX:
 
-        ```bash
-            export FLASK_APP="run.py"
-            export FLASK_DB_TYPE="postgres"       # Use postgres
-            export FLASK_DB_USER="postgres"       # Usuário do banco
-            export FLASK_DB_NAME="postgres"       # Nome do Banco
-            export FLASK_DB_PASSWORD="secretpass" # Senha do banco
-            export FLASK_DB_HOST="localhost"      # Hostname
-            export FLASK_DB_PORT="5432"           # Porta
-        ```
+```Dockerfile
 
-    3. Para DynamoDB
+FROM node:18.17.0 as build
 
-        ```bash
-        export FLASK_APP="run.py"
-        export FLASK_DB_TYPE="dynamodb"       # Use postgres
-        export AWS_DEFAULT_REGION="us-east-1" # AWS region
-        export AWS_ACCESS_KEY_ID="FAKEACCESSKEY123456" 
-        export AWS_SECRET_ACCESS_KEY="FakeSecretAccessKey987654321"
-        export AWS_SESSION_TOKEN="FakeSessionTokenABCDEFGHIJKLMNOPQRSTUVXYZ1234567890"
-        ```
+WORKDIR /app
 
-5. Execute o backend
+COPY . /app
 
-   ```bash
-   ./start-backend.sh &
-   ```
+RUN npm install
+RUN npm run build
 
-## Frontend
-No diretorio de frontend
+FROM nginx:alpine
 
-1. Instale o node com o nvm. Se não tiver o nvm instalado, siga o [tutorial](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
+COPY --from=build /app/build /usr/share/nginx/html
 
-    ```bash
-    nvm install 18.17.0
-    nvm use 18.17.0
-    # Habilite o yarn
-    corepack enable
-    ```
+EXPOSE 80
 
-2. Instale as dependências do node com o npm:
+CMD ["nginx", "-g", "daemon off;"]
+```
 
-    ```bash
-    npm install
-    ```
+4. Configuração do NGINX
+No diretório nginx/, o arquivo default.conf para configurar o proxy reverso e balanceamento de carga:
 
-3. Exporte a url onde está executando o backend e execute o backend.
+```conf
 
-   ```bash
-    export REACT_APP_BACKEND_URL=http://localhost:5000
-    yarn start
-   ```
+upstream flask_backend {
+    server backend1:5000;
+    server backend2:5000;
+}
 
-## Como Jogar
+server {
+    listen 80;
 
-### 1. Criar um novo jogo
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files $uri /index.html;
+    }
 
-Acesse a url do frontend http://localhost:3000
+    location /api/ {
+        proxy_pass http://flask_backend;
+    }
+}
+```
 
-Digite uma frase secreta
+5. Arquivo Docker Compose (docker-compose.yml)
+No diretório raiz, crie o arquivo docker-compose.yml para orquestrar os serviços:
 
-Envie
+```yaml
 
-Salve o game-id
+version: '3'
+services:
+  backend1:
+    build: ./backend
+    container_name: backend1
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./backend:/app
+    networks:
+      - backend-network
+    restart: always
+    ports:
+      - "5001:5000"
+
+  backend2:
+    build: ./backend
+    container_name: backend2
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./backend:/app
+    networks:
+      - backend-network
+    restart: always
+    ports:
+      - "5002:5000"
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    volumes:
+      - ./frontend:/app
+    networks:
+      - backend-network
+    depends_on:
+      - backend1
+      - backend2
+    ports:
+      - "3000:80"
+    restart: always
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+    networks:
+      - backend-network
+    depends_on:
+      - backend1
+      - backend2
+      - frontend
+    restart: always
+
+  db:
+    image: postgres
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB: guess_game_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    restart: always
+    ports:
+      - "5432:5432"
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  db-data:
+
+```
 
 
-### 2. Adivinhar a senha
+# Instruções para Rodar o Projeto
 
-Acesse a url do frontend http://localhost:3000
+1. Clonar o Repositório
 
-Vá para o endponint breaker
+**Sintaxe:**
+```bash
+git clone https://github.com/fams/guess_game.git
+cd guess_game
+```
+2. Configurar e Executar o Docker Compose
 
-entre com o game_id que foi gerado pelo Creator
+**Sintaxe:**
+```bash
+docker-compose up --build
+```
+3. Acessar o Jogo
 
-Tente adivinhar
+> Backend disponível em http://localhost:5001 e http://localhost:5002
+> Frontend disponível em http://localhost:3000
 
-## Estrutura do Código
+# Atualização de Componentes
+Para atualizar um dos componentes (backend, frontend ou banco de dados), basta alterar a versão da imagem Docker no docker-compose.yml e recriar os containers:
 
-### Rotas:
+**Sintaxe:**
+```bash
+docker-compose up --build
+```
+# Melhorias Futuras
+> Otimizar tamanho e segunraça das imagens utilizadno por exemplo Chainguard.
+> Implementar autenticação de usuário.
+> Adicionar limite de tentativas no jogo.
+> Adicionar suporte para mais bancos de dados.
 
-- **`/create`**: Cria um novo jogo. Armazena a senha codificada em base64 e retorna um `game_id`.
-- **`/guess/<game_id>`**: Permite ao usuário adivinhar a senha. Compara a adivinhação com a senha armazenada e retorna o resultado.
-
-### Classes Importantes:
-
-- **`Guess`**: Classe responsável por gerenciar a lógica de comparação entre a senha e a tentativa do jogador.
-- **`WrongAttempt`**: Exceção personalizada que é levantada quando a tentativa está incorreta.
-
-
-
-## Melhorias Futuras
-
-- Implementar autenticação de usuário para salvar e carregar jogos.
-- Adicionar limite de tentativas.
-- Melhorar a interface de feedback para as tentativas de adivinhação.
-
-## Licença
-
-Este projeto está licenciado sob a [MIT License](LICENSE).
-
-
-teste
+</p>
