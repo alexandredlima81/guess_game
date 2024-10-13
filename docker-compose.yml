@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend1:
+    build:
+      context: .
+      dockerfile: guess/Dockerfile
+    volumes:
+      - ./guess:/app/guess
+      - ./repository:/app/repository
+    restart: always
+    networks:
+      - app-network
+    container_name: backend1 
+
+  backend2:
+    build:
+      context: .
+      dockerfile: guess/Dockerfile
+    volumes:
+      - ./guess:/app/guess
+      - ./repository:/app/repository
+    restart: always
+    networks:
+      - app-network
+    container_name: backend2 
+
+  frontend:
+    build:
+      context: ./frontend 
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - app-network
+
+  db:
+    image: postgres:latest
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secretpass
+    restart: always
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:
+    driver: bridge
