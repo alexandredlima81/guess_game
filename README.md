@@ -139,6 +139,7 @@ O objetivo principal desta atividade é criar um ambiente Docker Compose para o 
 2. Dockerfile do Backend Python (Flask)
 No diretório backend/, o arquivo Dockerfile para configurar o container que executa o backend Flask:
 
+**Dockerfile**
 ```Dockerfile
 
 FROM python:3.8-slim
@@ -157,6 +158,7 @@ CMD ["python", "run.py"]
 3. Dockerfile do Frontend React
 No diretório frontend/, o arquivo Dockerfile para configurar o container que serve o frontend via NGINX:
 
+**Dockerfile**
 ```Dockerfile
 
 FROM node:18.17.0 as build
@@ -180,6 +182,8 @@ CMD ["nginx", "-g", "daemon off;"]
 4. Configuração do NGINX
 No diretório nginx/, o arquivo default.conf para configurar o proxy reverso e balanceamento de carga:
 
+
+**default.conf**
 ```conf
 
 upstream flask_backend {
@@ -205,89 +209,66 @@ server {
 5. Arquivo Docker Compose (docker-compose.yml)
 No diretório raiz, crie o arquivo docker-compose.yml para orquestrar os serviços:
 
+**docker-compose.yml**
 ```yaml
 
-version: '3'
+version: '3.8'
+
 services:
   backend1:
-    build: ./backend
-    container_name: backend1
-    environment:
-      - FLASK_ENV=development
+    build:
+      context: .
+      dockerfile: guess/Dockerfile
     volumes:
-      - ./backend:/app
-    networks:
-      - backend-network
+      - ./guess:/app/guess
+      - ./repository:/app/repository
     restart: always
-    ports:
-      - "5001:5000"
+    networks:
+      - app-network
+    container_name: backend1 
 
   backend2:
-    build: ./backend
-    container_name: backend2
-    environment:
-      - FLASK_ENV=development
+    build:
+      context: .
+      dockerfile: guess/Dockerfile
     volumes:
-      - ./backend:/app
-    networks:
-      - backend-network
+      - ./guess:/app/guess
+      - ./repository:/app/repository
     restart: always
-    ports:
-      - "5002:5000"
+    networks:
+      - app-network
+    container_name: backend2 
 
   frontend:
-    build: ./frontend
-    container_name: frontend
-    volumes:
-      - ./frontend:/app
-    networks:
-      - backend-network
-    depends_on:
-      - backend1
-      - backend2
-    ports:
-      - "3000:80"
-    restart: always
-
-  nginx:
-    image: nginx
-    container_name: nginx
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
+    build:
+      context: ./frontend 
+      dockerfile: Dockerfile
     ports:
       - "80:80"
-    networks:
-      - backend-network
-    depends_on:
-      - backend1
-      - backend2
-      - frontend
     restart: always
+    networks:
+      - app-network
 
   db:
-    image: postgres
-    container_name: postgres_db
+    image: postgres:latest
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     environment:
+      POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secretpass
-      POSTGRES_DB: guess_game_db
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - backend-network
     restart: always
-    ports:
-      - "5432:5432"
-
-networks:
-  backend-network:
-    driver: bridge
+    networks:
+      - app-network
 
 volumes:
-  db-data:
+  pgdata:
+
+networks:
+  app-network:
+    driver: bridge
 
 ```
-
 
 # Instruções para Rodar o Projeto
 
