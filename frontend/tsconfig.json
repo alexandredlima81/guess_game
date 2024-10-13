@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2016",                                  /* Define a versão do JavaScript a ser emitida. */
+    "module": "commonjs",                                /* Especifica o formato do módulo. */
+    "jsx": "react-jsx",                                 /* Especifica a forma como o JSX é transformado. */
+    "strict": true,                                      /* Habilita todas as opções de verificação estrita. */
+    "esModuleInterop": true,                             /* Habilita a importação de módulos CommonJS. */
+    "forceConsistentCasingInFileNames": true,            /* Garante que a capitalização dos nomes dos arquivos seja consistente. */
+    "skipLibCheck": true,                                /* Ignora a verificação de tipo dos arquivos .d.ts. */
+    "noEmit": true,                                     /* Desabilita a emissão de arquivos JavaScript. */
+    "resolveJsonModule": true,                           /* Permite a importação de arquivos .json. */
+    "moduleResolution": "node",                          /* Especifica como o TypeScript resolve os módulos. */
+    "baseUrl": "./",                                    /* Especifica o diretório base para resolver nomes de módulo não relativos. */
+    "lib": ["dom", "dom.iterable", "esnext"],          /* Especifica um conjunto de arquivos de declaração de biblioteca incluídos. */
+    "allowJs": true,                                    /* Permite arquivos JavaScript no projeto. */
+    "sourceMap": true                                   /* Cria arquivos de mapa de origem para o JavaScript emitido. */
+  },
+  "include": ["src/**/*"],                             /* Especifica quais arquivos devem ser incluídos. */
+  "exclude": ["node_modules"]                          /* Exclui a pasta node_modules da compilação. */
+}
